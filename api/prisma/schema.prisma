@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Book {
+  id String @id @default(uuid())
+
+  title       String
+  description String?
+  section     String
+  avaiable    Boolean @default(true)
+  authorId    String  @map("author_id")
+  genreId     String  @map("genre_id")
+
+
+  Author Author @relation(fields: [authorId], references: [id])
+  Genre  Genre  @relation(fields: [genreId], references: [id])
+
+
+  PersonBookRent PersonBookRent[]
+  @@map("books")
+}
+
+model Author {
+  id   String @id @default(uuid())
+  name String
+
+  Book Book[]
+
+  @@map("authors")
+}
+
+model Genre {
+  id String @id @default(uuid())
+
+  name String
+
+  Books Book[]
+  @@map("genres")
+}
+
+model Person {
+  id String @id @default(uuid())
+
+  name           String
+  identification String
+
+  PersonBookRent PersonBookRent[]
+  @@map("people")
+}
+
+model PersonBookRent {
+  id String @id @default(uuid())
+
+  rentedDay DateTime @default(now()) @map("rented_day")
+
+  expireDay DateTime? @map("expire_day")
+
+  personId String @map("person_id")
+  bookId   String @map("book_id")
+
+  Person Person @relation(fields: [personId], references: [id])
+  Book   Book   @relation(fields: [bookId], references: [id])
+}
