@@ -3,6 +3,7 @@ import { transformDatetimeToDate } from '../../utils/date-formatters';
 import { PrismaService } from '../../prisma/services/prisma.service';
 import { RentBookDto } from '../dto/rent-book.dto';
 import { RentBookService } from '../services/rent-book.service';
+import { InternalServerErrorException } from '@nestjs/common';
 
 describe('RentBookService', () => {
   let service: RentBookService;
@@ -55,7 +56,7 @@ describe('RentBookService', () => {
       personId: 'mockPersonId',
     };
 
-    const response = await service.run('mockId', data);
+    await service.run('mockId', data);
 
     expect(mockPrismaService.book.update).toHaveBeenCalledWith({
       data: {
@@ -76,5 +77,28 @@ describe('RentBookService', () => {
         ),
       },
     });
+  });
+
+  it('should throw internal server error if book is not available', async () => {
+    mockPrismaService.book.findUnique = jest.fn().mockResolvedValue({
+      id: 'mockId',
+      title: 'FightClub',
+      authorId: 'mockChuckPalahniukId',
+      description: 'You do not talk about FightClub',
+      genreId: 'mockDramaId',
+      avaiable: false,
+      section: 'mockDramaSection',
+    });
+
+    const data: RentBookDto = {
+      days: 5,
+      personId: 'mockPersonId',
+    };
+
+    await expect(service.run('mockId', data)).rejects.toThrow(
+      new InternalServerErrorException({
+        message: 'Book is not available',
+      }),
+    );
   });
 });
