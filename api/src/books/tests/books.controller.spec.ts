@@ -4,6 +4,7 @@ import { CreateBookDto } from '../dto/create-book.dto';
 import { FindAllBooksDto } from '../dto/find-all-books.dto';
 import { UpdateBookDto } from '../dto/update-book.dto';
 import { BooksService } from '../services/books.service';
+import { RentBookService } from '../services/rent-book.service';
 
 describe('BooksController', () => {
   let controller: BooksController;
@@ -16,13 +17,19 @@ describe('BooksController', () => {
     remove: jest.fn(),
   };
 
+  const mockRentBookService = {
+    run: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [BooksController],
-      providers: [BooksService],
+      providers: [BooksService, RentBookService],
     })
       .overrideProvider(BooksService)
       .useValue(mockBooksService)
+      .overrideProvider(RentBookService)
+      .useValue(mockRentBookService)
       .compile();
 
     controller = module.get<BooksController>(BooksController);

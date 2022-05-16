@@ -12,10 +12,15 @@ import { BooksService } from '../services/books.service';
 import { CreateBookDto } from '../dto/create-book.dto';
 import { UpdateBookDto } from '../dto/update-book.dto';
 import { FindAllBooksDto } from '../dto/find-all-books.dto';
+import { RentBookDto } from '../dto/rent-book.dto';
+import { RentBookService } from '../services/rent-book.service';
 
 @Controller('books')
 export class BooksController {
-  constructor(private readonly booksService: BooksService) {}
+  constructor(
+    private readonly booksService: BooksService,
+    private readonly rentBookService: RentBookService,
+  ) {}
 
   @Post()
   create(@Body() createBookDto: CreateBookDto) {
@@ -40,5 +45,10 @@ export class BooksController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.booksService.remove(id);
+  }
+
+  @Post('/:id/rent')
+  rent(@Param('id') id: string, body: RentBookDto) {
+    return this.rentBookService.run(id, body);
   }
 }
