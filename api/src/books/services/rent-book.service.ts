@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { transformDatetimeToDate } from '../../utils/date-formatters';
 import { PrismaService } from '../../prisma/services/prisma.service';
 import { RentBookDto } from '../dto/rent-book.dto';
@@ -8,7 +12,7 @@ import { BookEntity } from '../entities/book.entity';
 export class RentBookService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async run(bookId: string, { days, personId }: RentBookDto) {
+  async rent(bookId: string, { days, personId }: RentBookDto) {
     try {
       await this.validateBook(bookId);
 
@@ -32,6 +36,48 @@ export class RentBookService {
     } catch (err) {
       throw new InternalServerErrorException(err);
     }
+  }
+
+  async return(bookId: string) {
+    const date = transformDatetimeToDate(new Date());
+
+    const book = await this.prismaService.personBookRent.findFirst({
+      where: { bookId },
+    });
+
+    if (date > book.expireDay) {
+      const daysDiference = date.getDate() - book.expireDay.getDate();
+
+      await this.prismaService.person.update({
+        where: { id: book.personId },
+        data: {
+          blocked: true,
+        },
+      });
+
+      const personBookRent = await this.prismaService.personBookRent.update({
+        where: { id: book.id },
+        data: {
+          fine: 0.75 * daysDiference,
+        },
+      });
+
+      throw new BadRequestException({
+        message: 'Book is overdue',
+        fine: personBookRent.fine,
+      });
+    }
+
+    const bookReturned = await this.prismaService.book.update({
+      where: { id: bookId },
+      data: {
+        avaiable: true,
+      },
+    });
+
+    return {
+      message: `Book ${bookReturned.title} has been returned`,
+    };
   }
 
   getDateToReturn(rentDate: Date, days: number) {

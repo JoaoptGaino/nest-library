@@ -52,6 +52,7 @@ model Person {
 
   name           String
   identification String
+  blocked        Boolean @default(false)
 
   PersonBookRent PersonBookRent[]
   @@map("people")
@@ -64,8 +65,9 @@ model PersonBookRent {
 
   expireDay DateTime? @map("expire_day")
 
-  personId String @map("person_id")
-  bookId   String @map("book_id")
+  fine     Decimal?
+  personId String   @map("person_id")
+  bookId   String   @map("book_id")
 
   Person Person @relation(fields: [personId], references: [id])
   Book   Book   @relation(fields: [bookId], references: [id])

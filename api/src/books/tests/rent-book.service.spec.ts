@@ -56,7 +56,7 @@ describe('RentBookService', () => {
       personId: 'mockPersonId',
     };
 
-    await service.run('mockId', data);
+    await service.rent('mockId', data);
 
     expect(mockPrismaService.book.update).toHaveBeenCalledWith({
       data: {
@@ -95,7 +95,7 @@ describe('RentBookService', () => {
       personId: 'mockPersonId',
     };
 
-    await expect(service.run('mockId', data)).rejects.toThrow(
+    await expect(service.rent('mockId', data)).rejects.toThrow(
       new InternalServerErrorException({
         message: 'Book is not available',
       }),

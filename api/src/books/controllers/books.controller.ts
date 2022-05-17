@@ -49,6 +49,11 @@ export class BooksController {
 
   @Post('/:id/rent')
   rent(@Param('id') id: string, body: RentBookDto) {
-    return this.rentBookService.run(id, body);
+    return this.rentBookService.rent(id, body);
+  }
+
+  @Post('/:id/return')
+  return(@Param('id') id: string) {
+    return this.rentBookService.return(id);
   }
 }
